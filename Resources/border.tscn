@@ -1,0 +1,12 @@
+[gd_scene load_steps=3 format=3 uid="uid://bdsgphxgpgba5"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_pmr4d"]
+
+[sub_resource type="ORMMaterial3D" id="ORMMaterial3D_yqwfp"]
+albedo_color = Color(0, 0, 0, 1)
+
+[node name="Border" type="MeshInstance3D"]
+transform = Transform3D(0.2, 0, 0, 0, 0.04, 0, 0, 0, 10, 0, 0, 0)
+mesh = SubResource("BoxMesh_pmr4d")
+skeleton = NodePath("../Base")
+surface_material_override/0 = SubResource("ORMMaterial3D_yqwfp")

@@ -1,0 +1,67 @@
+[gd_scene load_steps=7 format=3 uid="uid://du4j7v38gcc54"]
+
+[ext_resource type="Script" path="res://Resources/camera_state_controller.gd" id="1_01j5l"]
+[ext_resource type="PackedScene" uid="uid://c7h8eobns6av0" path="res://Resources/Game Board/game_board.tscn" id="1_60bvm"]
+[ext_resource type="Script" path="res://Resources/player.gd" id="3_ba702"]
+[ext_resource type="Script" path="res://Resources/game_state_manager.gd" id="3_l5tut"]
+[ext_resource type="PackedScene" uid="uid://d2biub0sso8ec" path="res://Resources/UI/user_interface.tscn" id="4_xw5wo"]
+
+[sub_resource type="GDScript" id="GDScript_hym4y"]
+script/source = "extends Camera3D
+
+
+enum CameraStates {SELECT_MENU,PLAYING}
+
+
+func change_camera_state (new_camera_state : CameraStates):
+	
+	match new_camera_state:
+		
+		CameraStates.SELECT_MENU:
+			pass
+			
+		CameraStates.PLAYING:
+			pass
+
+"
+
+[node name="Main" type="Node"]
+
+[node name="Light" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 9.5835, 0)
+
+[node name="Camera (Not Playing)" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.422618, 0.906308, 0, -0.906308, 0.422618, 0, 10, 5)
+
+[node name="Camera (Playing)" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 10, 0)
+visible = false
+current = true
+fov = 60.0
+script = SubResource("GDScript_hym4y")
+
+[node name="Camera States" type="Node" parent="."]
+script = ExtResource("1_01j5l")
+camera_not_playing_path = NodePath("../Camera (Not Playing)")
+camera_playing_path = NodePath("../Camera (Playing)")
+
+[node name="Game Board" parent="." instance=ExtResource("1_60bvm")]
+game_state_manager_path = NodePath("../Game State Manager")
+
+[node name="Game State Manager" type="Node" parent="."]
+script = ExtResource("3_l5tut")
+game_board_manager_path = NodePath("../Game Board")
+
+[node name="Player" type="Node" parent="."]
+script = ExtResource("3_ba702")
+game_state_manager_path = NodePath("../Game State Manager")
+game_board_manager_path = NodePath("../Game Board")
+
+[node name="UI" parent="." instance=ExtResource("4_xw5wo")]
+
+[node name="Computer" type="Node" parent="."]
+
+[connection signal="game_end" from="Game State Manager" to="UI" method="_on_game_end"]
+[connection signal="game_state_change" from="Game State Manager" to="Camera States" method="_on_game_state_changed"]
+[connection signal="game_state_change" from="Game State Manager" to="Game Board" method="_on_game_state_change"]
+[connection signal="game_state_change" from="Game State Manager" to="Player" method="_on_game_state_changed"]

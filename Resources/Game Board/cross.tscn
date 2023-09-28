@@ -1,0 +1,17 @@
+[gd_scene load_steps=3 format=3 uid="uid://cmu0op1qmb7fp"]
+
+[ext_resource type="Material" uid="uid://bphbhmexape6k" path="res://Resources/Game Board/piece_material.tres" id="1_wnnax"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_4ge52"]
+
+[node name="cross" type="Node3D"]
+
+[node name="Cylinder1" type="MeshInstance3D" parent="."]
+transform = Transform3D(-6.18172e-09, -0.707107, -0.141421, 0.2, -4.37114e-08, 0, -6.18172e-09, -0.707107, 0.141421, 0.00513208, 0, 0.000914335)
+mesh = SubResource("CylinderMesh_4ge52")
+surface_material_override/0 = ExtResource("1_wnnax")
+
+[node name="Cylinder2" type="MeshInstance3D" parent="."]
+transform = Transform3D(-6.18172e-09, -0.707107, 0.141421, 0.2, -4.37114e-08, 0, 6.18172e-09, 0.707107, 0.141421, 0, 0, 0)
+mesh = SubResource("CylinderMesh_4ge52")
+surface_material_override/0 = ExtResource("1_wnnax")

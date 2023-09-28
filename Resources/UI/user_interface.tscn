@@ -1,0 +1,30 @@
+[gd_scene load_steps=7 format=3 uid="uid://d2biub0sso8ec"]
+
+[ext_resource type="Script" path="res://Resources/UI/user_interface_controller.gd" id="1_6s0ot"]
+[ext_resource type="PackedScene" uid="uid://csj26yos8bqi4" path="res://Resources/UI/main_menu.tscn" id="2_hdewu"]
+[ext_resource type="PackedScene" uid="uid://ickxbbnul61p" path="res://Resources/UI/online_menu.tscn" id="3_wxl72"]
+[ext_resource type="PackedScene" uid="uid://bwlo6xyp8fy52" path="res://Resources/UI/end_game_menu.tscn" id="4_a7opi"]
+[ext_resource type="PackedScene" uid="uid://dw4e0jcgl2pes" path="res://Resources/UI/playing_menu.tscn" id="5_17ie4"]
+[ext_resource type="PackedScene" uid="uid://d4cv8pntbajns" path="res://Resources/UI/piece_choice_menu.tscn" id="6_t3trl"]
+
+[node name="UI" type="CanvasLayer"]
+script = ExtResource("1_6s0ot")
+
+[node name="Main" parent="." instance=ExtResource("2_hdewu")]
+visible = false
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 0.0
+offset_bottom = 0.0
+
+[node name="Online" parent="." instance=ExtResource("3_wxl72")]
+visible = false
+
+[node name="EndGame" parent="." instance=ExtResource("4_a7opi")]
+visible = false
+
+[node name="Playing" parent="." instance=ExtResource("5_17ie4")]
+visible = false
+
+[node name="PieceChoice" parent="." instance=ExtResource("6_t3trl")]
+visible = false

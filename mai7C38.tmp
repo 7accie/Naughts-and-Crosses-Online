@@ -1,0 +1,72 @@
+[gd_scene load_steps=4 format=3 uid="uid://du4j7v38gcc54"]
+
+[ext_resource type="PackedScene" uid="uid://c7h8eobns6av0" path="res://game_board.tscn" id="1_60bvm"]
+[ext_resource type="Script" path="res://player.gd" id="3_ba702"]
+
+[sub_resource type="GDScript" id="GDScript_ia76t"]
+script/source = "extends Node
+class_name GameStateController
+
+
+# References
+
+# Signals
+signal game_state_load
+signal game_state_changed(new_game_state : GameStates)
+
+
+# Data
+enum GameStates {LOAD, NAUGHT, CROSS}
+var current_game_state : GameStates
+var loading_count : int = 0
+
+
+func _ready():
+	game_state_load.emit()
+	
+	
+func end_state():
+	
+	if current_game_state == GameStates.NAUGHT:
+		change_turn(GameStates.CROSS)
+		
+	elif current_game_state == GameStates.CROSS:
+		change_turn(GameStates.NAUGHT)
+		
+	elif current_game_state == GameStates.LOAD:
+		print(\"Decreasing loading count\")
+		loading_count -= 1
+		if loading_count == 0:
+			print(\"Loading finished\")
+			change_turn(GameStates.CROSS)
+
+
+func change_turn(new_game_state : GameStates):
+	
+	current_game_state = new_game_state
+	game_state_changed.emit(new_game_state)
+	
+	
+func request_loading():
+	print(\"Increasing loading count\")
+	loading_count += 1
+	
+
+"
+
+[node name="Main" type="Node"]
+
+[node name="Game Board" parent="." instance=ExtResource("1_60bvm")]
+
+[node name="Light" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 9.5835, 0)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 10, 0)
+
+[node name="Player" type="Node" parent="."]
+script = ExtResource("3_ba702")
+game_board_manager_path = NodePath("../Game Board")
+
+[node name="Node" type="Node" parent="."]
+script = SubResource("GDScript_ia76t")

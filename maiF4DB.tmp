@@ -1,0 +1,29 @@
+[gd_scene load_steps=4 format=3 uid="uid://du4j7v38gcc54"]
+
+[ext_resource type="PackedScene" uid="uid://c7h8eobns6av0" path="res://game_board.tscn" id="1_60bvm"]
+[ext_resource type="Script" path="res://game_state_manager.gd" id="3_21khn"]
+[ext_resource type="Script" path="res://player.gd" id="3_ba702"]
+
+[node name="Main" type="Node"]
+
+[node name="Game Board" parent="." instance=ExtResource("1_60bvm")]
+game_state_manager_path = NodePath("../Game State Manager")
+
+[node name="Light" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 9.5835, 0)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 10, 0)
+
+[node name="Player" type="Node" parent="."]
+script = ExtResource("3_ba702")
+game_state_manager_path = NodePath("../Game State Manager")
+game_board_manager_path = NodePath("../Game Board")
+
+[node name="Game State Manager" type="Node" parent="."]
+script = ExtResource("3_21khn")
+game_board_manager_path = NodePath("../Game Board")
+
+[connection signal="game_state_changed" from="Game State Manager" to="Player" method="_on_game_state_changed"]
+[connection signal="game_state_load" from="Game State Manager" to="Game Board" method="_on_load"]
+[connection signal="game_state_load" from="Game State Manager" to="Player" method="_on_load"]

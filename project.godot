@@ -1,0 +1,50 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Naughts & Crosses Online"
+run/main_scene="res://Resources/main.tscn"
+config/features=PackedStringArray("4.1", "Mobile")
+config/icon="res://icon.svg"
+
+[autoload]
+
+GlobalSignalManager="*res://Auto Load/global_signal_manager.gd"
+CameraTransitioner="*res://Auto Load/camera_transitioner.gd"
+
+[display]
+
+window/size/viewport_width=1080
+window/size/viewport_height=1080
+window/size/mode=2
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/vsync/vsync_mode=0
+
+[dotnet]
+
+project/assembly_name="Naughts & Crosses Online"
+
+[gui]
+
+theme/custom="res://game_theme.tres"
+
+[input]
+
+input_hit={
+"deadzone": 0.5,
+"events": [Object(InputEventMouseButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"button_mask":0,"position":Vector2(0, 0),"global_position":Vector2(0, 0),"factor":1.0,"button_index":1,"canceled":false,"pressed":false,"double_click":false,"script":null)
+]
+}
+
+[rendering]
+
+renderer/rendering_method="mobile"

@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3 uid="uid://du4j7v38gcc54"]
+
+[ext_resource type="PackedScene" uid="uid://c7h8eobns6av0" path="res://game_board.tscn" id="1_5ahqa"]
+
+[node name="Main" type="Node"]
+
+[node name="Game board" parent="." instance=ExtResource("1_5ahqa")]
+
+[node name="Light" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 9.5835, 0)
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 7.21985, 0)
