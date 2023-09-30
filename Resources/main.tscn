@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://du4j7v38gcc54"]
+[gd_scene load_steps=9 format=3 uid="uid://du4j7v38gcc54"]
 
 [ext_resource type="Script" path="res://Resources/camera_state_controller.gd" id="1_01j5l"]
 [ext_resource type="PackedScene" uid="uid://c7h8eobns6av0" path="res://Resources/Game Board/game_board.tscn" id="1_60bvm"]
+[ext_resource type="Script" path="res://Resources/multiplayer_manager.gd" id="1_gq2kj"]
 [ext_resource type="Script" path="res://Resources/computer_opponent.gd" id="1_usmeu"]
 [ext_resource type="Script" path="res://Resources/player.gd" id="3_ba702"]
 [ext_resource type="Script" path="res://Resources/game_state_manager.gd" id="3_l5tut"]
@@ -27,6 +28,9 @@ func change_camera_state (new_camera_state : CameraStates):
 "
 
 [node name="Main" type="Node"]
+
+[node name="Node" type="Node" parent="."]
+script = ExtResource("1_gq2kj")
 
 [node name="Computer Opponent" type="Node" parent="." node_paths=PackedStringArray("game_board_manager", "game_state_manager")]
 script = ExtResource("1_usmeu")
@@ -67,7 +71,6 @@ script = SubResource("GDScript_hym4y")
 transform = Transform3D(1, 0, 0, 0, 0.422618, 0.906308, 0, -0.906308, 0.422618, 0, 10, 5)
 current = true
 
-[connection signal="game_end" from="Game State Manager" to="UI" method="_on_game_end"]
 [connection signal="game_state_change" from="Game State Manager" to="Computer Opponent" method="on_game_state_change"]
 [connection signal="game_state_change" from="Game State Manager" to="Player" method="_on_game_state_change"]
 [connection signal="game_state_change" from="Game State Manager" to="Game Board" method="_on_game_state_change"]

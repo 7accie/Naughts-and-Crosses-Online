@@ -39,7 +39,7 @@ var is_playing = false
 ## Connects necessary signals for the script
 func _ready():
 	
-	GlobalSignalManager.UI_button_click.connect(_on_UI_button_click)
+	GlobalSignalManager.UI_button_input.connect(_on_UI_button_input)
 
 
 ## Controls what happens on each game state. [br]
@@ -59,19 +59,19 @@ func on_game_state_change(new_game_state):
 
 ## Handles what to do on certain UI inputs. [br]
 ## Mainly to get game_piece and is_playing values.
-func _on_UI_button_click(signal_type):
+func _on_UI_button_input(input_type: UIController.InputTypes):
 	
-	match signal_type:
+	match input_type:
 		
-		GlobalSignalManager.SignalType.PLAYER_CHOSE_NAUGHT:
+		UIController.InputTypes.PLAYER_CHOSE_NAUGHT_BUTTON:
 			game_piece = GameBoardManager.GamePieces.CROSS
 			is_playing = true
 		
-		GlobalSignalManager.SignalType.PLAYER_CHOSE_CROSS:
+		UIController.InputTypes.PLAYER_CHOSE_CROSS_BUTTON:
 			game_piece = GameBoardManager.GamePieces.NAUGHT
 			is_playing = true
 			
-		GlobalSignalManager.SignalType.MENU:
+		UIController.InputTypes.MENU_BUTTON:
 			is_playing = false
 
 

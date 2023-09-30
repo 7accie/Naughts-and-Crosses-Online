@@ -41,24 +41,24 @@ var change_game_piece = true
 ## Connects necessary signals needed for the script.
 func _ready():
 	
-	GlobalSignalManager.UI_button_click.connect(_on_UI_button_click)
+	GlobalSignalManager.UI_button_input.connect(_on_UI_button_input)
 
 
 ## Handles what to do on certain UI inputs. [br]
 ## Mainly just sets game_piece and change_game_piece.
-func _on_UI_button_click(signal_type):
+func _on_UI_button_input(input_type: UIController.InputTypes):
 	
-	match signal_type:
+	match input_type:
 		
-		GlobalSignalManager.SignalType.PLAYER_CHOSE_NAUGHT:
+		UIController.InputTypes.PLAYER_CHOSE_NAUGHT_BUTTON:
 			game_piece = GameBoardManager.GamePieces.NAUGHT
 			change_game_piece = false
 		
-		GlobalSignalManager.SignalType.PLAYER_CHOSE_CROSS:
+		UIController.InputTypes.PLAYER_CHOSE_CROSS_BUTTON:
 			game_piece = GameBoardManager.GamePieces.CROSS
 			change_game_piece = false
 			
-		GlobalSignalManager.SignalType.MENU:
+		UIController.InputTypes.MENU_BUTTON:
 			change_game_piece = true
 			
 

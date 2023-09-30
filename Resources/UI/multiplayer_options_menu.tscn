@@ -1,10 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://ickxbbnul61p"]
+[gd_scene load_steps=3 format=3 uid="uid://db4ui1sb5eq48"]
 
-[ext_resource type="Script" path="res://Resources/UI/button_menu_manager.gd" id="1_s06h3"]
-[ext_resource type="Script" path="res://Resources/UI/control_children_even_resizer.gd" id="2_xa77t"]
-[ext_resource type="PackedScene" uid="uid://vnjiqq2wkbd" path="res://Resources/UI/spacer.tscn" id="3_tohi5"]
+[ext_resource type="Script" path="res://Resources/UI/input_menu_manager.gd" id="1_gbr8y"]
+[ext_resource type="Script" path="res://Resources/UI/control_children_even_resizer.gd" id="2_ik8ix"]
 
-[node name="Online" type="Control"]
+[node name="Options" type="Control"]
 layout_mode = 3
 anchors_preset = 8
 anchor_left = 0.5
@@ -17,7 +16,7 @@ offset_right = 20.0
 offset_bottom = 20.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_s06h3")
+script = ExtResource("1_gbr8y")
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 1
@@ -38,22 +37,19 @@ theme_override_constants/margin_bottom = 50
 [node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
 layout_mode = 2
 alignment = 1
-script = ExtResource("2_xa77t")
+script = ExtResource("2_ik8ix")
 
-[node name="Options" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_type_variation = &"HeaderLarge"
-text = "Multiplayer options:"
+text = "Multiplayer options"
 horizontal_alignment = 1
-
-[node name="Spacer" parent="PanelContainer/MarginContainer/VBoxContainer" instance=ExtResource("3_tohi5")]
-layout_mode = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
-script = ExtResource("2_xa77t")
+script = ExtResource("2_ik8ix")
 
 [node name="Host" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2
@@ -61,12 +57,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 4
 text = "Host Game
 "
-
-[node name="Spacer" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(20, 0)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_stretch_ratio = 0.2
 
 [node name="Join" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HBoxContainer"]
 layout_mode = 2

@@ -21,6 +21,7 @@ class_name GameBoardManager
 
 
 signal game_board_click(position : Vector3)
+signal game_end(naughts_won: bool, crosses_won: bool)
 
 
 
@@ -143,8 +144,8 @@ func _get_rounded_piece_position(position_3D) -> Vector4:
 ## Connects all required signals for the script.
 func _connect_signals():
 	
-	GlobalSignalManager.connect_global_signal(board_mesh.get_node("StaticBody3D").input_event, GlobalSignalManager.SignalType.GAME_BOARD_INPUT)
-
+	GlobalSignalManager.connect_global_signal(board_mesh.get_node("StaticBody3D").input_event, "GAME_BOARD_INPUT")
+	GlobalSignalManager.connect_global_signal(game_end, "GAME_END")
 	
 ## Checks if a specific game piece has won or not. [br]
 ## Validation: GamePiece.EMPTY cannot be inputted and will return false
@@ -263,6 +264,9 @@ func add_piece(piece_type:GamePieces, position_3D:Vector3):
 	board_pieces[position_2D] = object_drawer.create_game_piece(piece_type, new_board_piece_position)
 	board_data[piece_position_data.z][piece_position_data.w] = piece_type
 	
+	# Checks if the game has ended
+	handle_game_ended()
+	
 	return true
 
 
@@ -286,18 +290,23 @@ func add_random_piece(piece_type:GamePieces):
 	var random_piece_position = empty_positions[randi_range(0, empty_positions.size()-1)]
 	
 	add_piece(piece_type, Vector3(random_piece_position.x, 0, random_piece_position.y))
-
-
-## Returns whether the game has drawn, i.e. all positions are taken up.
-func has_game_drawn() -> bool:
-	return board_pieces.size() >= GRID_SIZE ** 2
-
-
-## Returns whether naughts has won or not.
-func has_naughts_won() -> bool:
-	return _has_game_piece_won(GamePieces.NAUGHT)
-
-
-## Returns whether crosses has won or not.
-func has_crosses_won() -> bool:
 	return _has_game_piece_won(GamePieces.CROSS)
+
+
+func handle_game_ended():
+	
+	var naughts_won = false
+	var crosses_won = false
+	
+	if _has_game_piece_won(GamePieces.NAUGHT):
+		naughts_won = true
+		
+	elif _has_game_piece_won(GamePieces.CROSS):
+		crosses_won = true
+		
+	elif board_pieces.size() < GRID_SIZE ** 2:
+		# Game has not ended as neitehr naughts or crosses has won and the game hasn't drawn.
+		return
+	
+	# Game has definitely ended
+	game_end.emit(naughts_won, crosses_won)

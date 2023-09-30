@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://vnjiqq2wkbd"]
 
 [node name="Spacer" type="Control"]
-custom_minimum_size = Vector2(10, 10)
+custom_minimum_size = Vector2(5, 5)
 layout_mode = 3
 anchors_preset = 0
 size_flags_vertical = 3

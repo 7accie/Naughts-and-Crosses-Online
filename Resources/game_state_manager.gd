@@ -20,7 +20,6 @@ class_name GameStateManager
 
 
 signal game_state_change(new_game_state : GameStates) # Primary way to control how game flows
-signal game_end(naughts_won, crosses_won)
 
 
 
@@ -40,6 +39,7 @@ signal game_end(naughts_won, crosses_won)
 enum GameStates {
 	LOAD, 
 	MENU, 
+	MULTIPLAYER,
 	PIECE_CHOICE, 
 	PLAYING, 
 	NAUGHT, 
@@ -64,7 +64,7 @@ var check_if_waiting : bool = false
 var check_if_endgame : bool = false
 
 ## Used to temprarily check how many scripts are still waiting. [br]
-## Set using initial_waiting_count
+## Set using initial_waiting_count.
 var waiting_counter : int = 0
 
 ## Stores whether naughts has won, for end game UI. [br]
@@ -74,6 +74,8 @@ var naughts_won : bool = false
 ## Stores whether crosses has won, for end game UI. [br]
 ## Non-persistant variable that will need to be reset.
 var crosses_won : bool = false
+
+var game_ended : bool = false
 
 ## Controls whether the game will automaticlaly be replayed after a reset or not. [br]
 var play_after_restart : bool = false
@@ -106,36 +108,37 @@ func _ready():
 
 ## Controls what happens on a UI button click.
 ## UI button clicks have a big influence on game flow.
-func _on_UI_button_click(signal_type : GlobalSignalManager.SignalType):
+func _on_UI_button_input(input_type: UIController.InputTypes):
 	
-	match signal_type:
+	match input_type:
 		
-		GlobalSignalManager.SignalType.REPLAY:
-			_on_reset()
+		UIController.InputTypes.REPLAY_BUTTON:
+			_handle_reset()
 		
-		GlobalSignalManager.SignalType.PLAY_LOCAL:
+		UIController.InputTypes.PLAY_LOCAL_BUTTON:
 			start_game()
 			
-		GlobalSignalManager.SignalType.PLAY_COMPUTER:
-			start_game_computer()
-			
-		GlobalSignalManager.SignalType.MENU:
-			_on_menu_button()
-			
-		GlobalSignalManager.SignalType.PLAYER_CHOSE_CROSS:
+		UIController.InputTypes.PLAY_COMPUTER_BUTTON:
 			start_game_computer()
 		
-		GlobalSignalManager.SignalType.PLAYER_CHOSE_NAUGHT:
+		UIController.InputTypes.MENU_BUTTON:
+			_on_menu_button()
+			
+		UIController.InputTypes.PLAYER_CHOSE_CROSS_BUTTON:
+			start_game_computer()
+		
+		UIController.InputTypes.PLAYER_CHOSE_NAUGHT_BUTTON:
 			start_game_computer()
 		
 
 ## Resets the game for another game. [br]
 ## Resets all variables that are non-persistant and sends out the reset signal.
-func _on_reset():
+func _handle_reset():
 	
 	can_end_state = true
 	naughts_won = false
 	crosses_won = false
+	game_ended = false
 	
 	change_game_state(GameStates.RESET)
 		
@@ -151,7 +154,7 @@ func _on_menu_button():
 	piece_chosen = false
 	play_after_restart = false
 	
-	change_game_state(GameStates.RESET)
+	_handle_reset()
 	
 
 ## Ends current game state and controls what the next game state will then be.
@@ -167,10 +170,9 @@ func end_state():
 		handle_waiting()
 		return
 		
-	if check_if_endgame:
-		if has_game_ended():
-			change_game_state(GameStates.END_GAME)
-			return
+	if game_ended:
+		handle_game_end()
+		return
 	
 	match current_game_state:
 		
@@ -190,7 +192,8 @@ func end_state():
 			change_game_state(GameStates.NAUGHT)
 
 
-# Handles loading in each script that needs to be loaded in prior to the game starting, returning whether if the game is waiting still or not
+## Handles loading in each script that needs to be loaded in prior to the game starting, returning
+## whether if the game is waiting still or not
 func handle_waiting():
 	
 	# Only is waiting if the game is loading or resetting
@@ -211,34 +214,14 @@ func handle_waiting():
 		return	false
 
 
-# Checks if game has ended and updates data accordingly.
-func has_game_ended():
-	
-	# Checks who has won. 
-	# If no one has won, then checks if it's a draw
-	# If not then carries on with the game and returns false
-	
-	if game_board_manager.has_naughts_won():
-		naughts_won = true
-	elif game_board_manager.has_crosses_won():
-		crosses_won = true
-	elif not game_board_manager.has_game_drawn():
-		return false
-	
-	handle_game_end()
-	return true
-
-
-# Changes state and activates the signal.
+## Changes state and activates the signal.
 func change_game_state(new_game_state : GameStates):		
-	
-	print(new_game_state)
 	
 	current_game_state = new_game_state
 	game_state_change.emit(new_game_state)
 
 
-# Handles what happens on game end.
+## Handles what happens on game end.
 func handle_game_end():
 	
 	print("Game ended.")
@@ -251,13 +234,10 @@ func handle_game_end():
 		print("Crosses won!")
 	else:
 		print("It's a draw!")
-		
-	game_end.emit(naughts_won,crosses_won)
 
 
-
-
-# Handles what happens after the game resets based on certain conditions (such as if it's a replay or return to menu)
+## Handles what happens after the game resets based on certain conditions (such as if it's a replay 
+## or return to menu)
 func handle_reset():
 	
 	if play_after_restart:
@@ -267,17 +247,18 @@ func handle_reset():
 		change_game_state(GameStates.MENU)
 
 
-# Starts the game
+## Starts the game
 func start_game():
 	
 	can_end_state = true
 	play_after_restart = true
 	check_if_endgame = true
+	
 	change_game_state(GameStates.PLAYING)
 	change_game_state(GameStates.NAUGHT)
  
 
-# Starts a game with the computer
+## Starts a game with the computer
 func start_game_computer():
 	
 	if piece_chosen == false:
@@ -287,26 +268,33 @@ func start_game_computer():
 		start_game()
 
 
-# Handles logic on each game turn
+## Handles logic on each game turn
 func handle_game_turn():
 	
 	if current_game_state == GameStates.NAUGHT:
 		print("CROSS")
 		change_game_state(GameStates.CROSS)
+		
 	elif current_game_state == GameStates.CROSS:
 		print("NAUGHT")
 		change_game_state(GameStates.NAUGHT)
+		
 	else:
 		print("Error! Cannot handle game turn as the game is currently not being played!")
-		
+	
 
-# Allows a script to request the game state manager to wait for them to finish loading
+## Allows a script to request the game state manager to wait for them to finish loading
 func request_loading():
 	waiting_counter += 1
 	initial_waiting_count += 1
 
 
-# Connects all necessary signals for the game state manager
+## Connects all necessary signals for the game state manager
 func connect_signals():
 	
-	GlobalSignalManager.UI_button_click.connect(_on_UI_button_click)
+	GlobalSignalManager.UI_button_input.connect(_on_UI_button_input)
+	
+	GlobalSignalManager.game_end.connect(func(has_naughts_won, has_crosses_won):
+		naughts_won = has_naughts_won
+		crosses_won = has_crosses_won
+		game_ended = true)
