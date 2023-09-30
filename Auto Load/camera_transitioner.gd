@@ -1,15 +1,40 @@
-# Used for transitioning two cameras globally
+
+# ---------------------------------------------------------------------------------------------- #
+
+## Used for smooth transitions between two cameras.
+ 
+# ---------------------------------------------------------------------------------------------- #
 
 
 extends Camera3D
 
 
+
+
+### --- Properties --- ###
+																									
+### ------------------------------------------------------------------------------------------ ###
+
+
+## References the global camera used for transitioning two cameras smoothly.
 @onready var camera : Camera3D = get_node(".")
-@onready var tween : Tween 
+
+## Used for smooth motion between two cameras.
+var tween : Tween 
+
+## Used to ensure that two transitions are not occurring at the same time.
 var is_transitioning = false
 
 
-# Transitions smoothly from one camera to another camera
+
+
+### --- Functions --- ###
+																									
+### ------------------------------------------------------------------------------------------ ###
+
+
+
+## Transitions smoothly from one camera to another camera.
 func transition_camera(from: Camera3D, to: Camera3D, duration: float = 1.0):
 	
 	# Checks if the current camera is trying to be transitioned to

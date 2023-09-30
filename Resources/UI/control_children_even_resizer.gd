@@ -1,45 +1,66 @@
-# Used to evenly space out UI elements, excluiding spacers
-# Can only be used on control nodes!!
 
+# ---------------------------------------------------------------------------------------------- #
+
+## Used to evenly space out UI elements, excluding spacers.
+## Automatically resizes when any child size changes. [br]
+## Can only be used on control nodes!!
+ 
+# ---------------------------------------------------------------------------------------------- #
 
 
 extends Node
+class_name ControlChildrenEvenResizer
+
+
+
+
+### --- Properties --- ###
+																									
+### ------------------------------------------------------------------------------------------ ###
+
+
+## Holds all children control nodes/
 @onready var children_nodes  = get_children()
 
-
+## Used to check if a resizing has already occurred. [br]
+## To disable other false resize signals whilst even resizing is happening.
 var is_resizing = false
-var children_count = 0
-var children_signal_count = 0 # Used to check when all signals have passed
+
+## Used to count the number of false resize signals left whilst an even resizing is happening.
+var false_signal_counter = 0
 
 
-# Connects all children resized signals so they activate the resize method,
-# resizes all children once and sets children count
+
+
+### --- Functions --- ###
+																									
+### ------------------------------------------------------------------------------------------ ###
+
+
+## Connects all children resized signals so they activate the resize method, resizes all children 
+## once and sets children count.
 func _ready():
 	
 	for child in children_nodes:
 		child.resized.connect(_on_children_size_change)
-		children_count += 1
 
 
-# Handles what to do when a child is changed and ensures all children
-# are only resized once
+# Handles what to do when a child is changed and ensures all children are only resized once.
 func _on_children_size_change():
 	
-		
 	if is_resizing == false:
 		is_resizing = true
 		_resize_children_evenly()
-		children_signal_count = children_count
+		false_signal_counter = children_nodes.size()
 	
-	if children_count > 0:
-		children_count -= 1
+	if false_signal_counter > 0:
+		false_signal_counter -= 1
 		
-	if children_count == 0:
+	if false_signal_counter == 0:
 		is_resizing = false
 			
 
-# Resizes all children evenly based on the child with the largest needed size
-# and scale ratios
+## Resizes all children evenly based on the child with the largest needed size and scale ratios.
 func _resize_children_evenly():
 	
 		# Max size of children, accounting for the stretch ratio

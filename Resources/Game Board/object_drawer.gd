@@ -1,12 +1,36 @@
+
+# ---------------------------------------------------------------------------------------------- #
+
+## Instantiates 3d game piece meshes
+ 
+# ---------------------------------------------------------------------------------------------- #
+
+
 extends Node
 class_name ObjectDrawer
+
+
+
+
+### --- Properties --- ###
+																									
+### ------------------------------------------------------------------------------------------ ###
+
 
 @onready var naught_scene : Resource = load("res://Resources/Game Board/naught.tscn")
 @onready var cross_scene : Resource = load("res://Resources/Game Board/cross.tscn")
 
 
-# Creates a specified game piece at a certain position
-func create_game_piece(game_piece_type:GameBoardManager.GamePieces, position:Vector3):
+
+
+### --- Functions --- ###
+																									
+### ------------------------------------------------------------------------------------------ ###
+
+
+## Creates a specified game piece at a certain position. [br]
+## Validations: game_piece_type cannot be GamePiece.EMPTY
+func create_game_piece(game_piece_type: GameBoardManager.GamePieces, position: Vector3):
 	
 	# Validation
 	# Checks if game_piece_type isn't empty as cannot place empty game piece!

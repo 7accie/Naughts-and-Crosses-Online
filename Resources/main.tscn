@@ -41,10 +41,10 @@ game_board_manager = NodePath("../Game Board")
 [node name="Game Board" parent="." node_paths=PackedStringArray("game_state_manager") instance=ExtResource("1_60bvm")]
 game_state_manager = NodePath("../Game State Manager")
 
-[node name="Camera States" type="Node" parent="."]
+[node name="Camera States" type="Node" parent="." node_paths=PackedStringArray("camera_not_playing", "camera_playing")]
 script = ExtResource("1_01j5l")
-camera_not_playing_path = NodePath("../Camera (Not Playing)")
-camera_playing_path = NodePath("../Camera (Playing)")
+camera_not_playing = NodePath("../Camera (Not Playing)")
+camera_playing = NodePath("../Camera (Playing)")
 
 [node name="UI" parent="." instance=ExtResource("4_xw5wo")]
 

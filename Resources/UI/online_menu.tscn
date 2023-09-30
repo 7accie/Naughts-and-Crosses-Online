@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://ickxbbnul61p"]
 
-[ext_resource type="Script" path="res://Resources/UI/button_menu.gd" id="1_s06h3"]
+[ext_resource type="Script" path="res://Resources/UI/button_menu_manager.gd" id="1_s06h3"]
 [ext_resource type="Script" path="res://Resources/UI/control_children_even_resizer.gd" id="2_xa77t"]
 [ext_resource type="PackedScene" uid="uid://vnjiqq2wkbd" path="res://Resources/UI/spacer.tscn" id="3_tohi5"]
 

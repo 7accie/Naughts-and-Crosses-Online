@@ -1,46 +1,111 @@
+
+# ---------------------------------------------------------------------------------------------- #
+
+## Controls the flow of the game.
+## Uses states that the rest of the game listens and reacts to.
+ 
+# ---------------------------------------------------------------------------------------------- #
+
+
 extends Node
 class_name GameStateManager
+
+
+
+
+### --- Signals --- ###
+																									
+### ------------------------------------------------------------------------------------------ ###
+
+
+
+signal game_state_change(new_game_state : GameStates) # Primary way to control how game flows
+signal game_end(naughts_won, crosses_won)
+
+
+
+
+### --- Properties --- ###
+																									
+### ------------------------------------------------------------------------------------------ ###
+
 
 
 # References
 @export var game_board_manager : Node
 @export var player : Node
 
-# Signals
-signal game_state_change(new_game_state : GameStates) # Primary way to control how game flows
-signal game_end(naughts_won, crosses_won)
+
+## Stores each kind of game state.
+enum GameStates {
+	LOAD, 
+	MENU, 
+	PIECE_CHOICE, 
+	PLAYING, 
+	NAUGHT, 
+	CROSS, 
+	END_GAME, 
+	RESET}
+
+## Stores the current game state.
+var current_game_state : GameStates
+
+## Stores the total count of scripts that need time to load on ready or reset. [br]
+## Does not change after it's set.
+var initial_waiting_count : int = 0
+
+## Used to control whether a game state can be externally ended or not.
+var can_end_state : bool = false
+
+## Used to check if any scripts are currently waiting.
+var check_if_waiting : bool = false
+
+## Used to check if an end-game check needs to be done or not.
+var check_if_endgame : bool = false
+
+## Used to temprarily check how many scripts are still waiting. [br]
+## Set using initial_waiting_count
+var waiting_counter : int = 0
+
+## Stores whether naughts has won, for end game UI. [br]
+## Non-persistant variable that will need to be reset.
+var naughts_won : bool = false
+
+## Stores whether crosses has won, for end game UI. [br]
+## Non-persistant variable that will need to be reset.
+var crosses_won : bool = false
+
+## Controls whether the game will automaticlaly be replayed after a reset or not. [br]
+var play_after_restart : bool = false
+
+## When the computer is playing, stores whether the player (and therefore computer) has chosen their
+## piece and the game can start.
+var piece_chosen : bool = false
 
 
-# Data
-enum GameStates {LOAD, MENU, PIECE_CHOICE, PLAYING, NAUGHT, CROSS, END_GAME, RESET}
-static var current_game_state : GameStates
-var initial_waiting_count = 0
 
-# Data that needs to be reset
-var can_end_state = false
-var waiting_count : int = 0	 # Used for counting how many scripts need to be loaded or restarted, needs to be set manually.
-var naughts_won = false
-var crosses_won = false
-var play_after_restart = false
 
-# Play against computer
-var comp_is_playing = false
-var piece_chosen = false
+### --- Functions --- ###
+																									
+### ------------------------------------------------------------------------------------------ ###
 
 
 
-# Game start
+## Connects signals, loads if needed and then starts game at main menu.
 func _ready():
 	
 	can_end_state = true
 	connect_signals()
 	
-	if waiting_count > 0:
+	if waiting_counter > 0:
+		check_if_waiting = true
 		change_game_state(GameStates.LOAD)
 	else:
 		change_game_state(GameStates.MENU)
 	
 
+## Controls what happens on a UI button click.
+## UI button clicks have a big influence on game flow.
 func _on_UI_button_click(signal_type : GlobalSignalManager.SignalType):
 	
 	match signal_type:
@@ -52,19 +117,20 @@ func _on_UI_button_click(signal_type : GlobalSignalManager.SignalType):
 			start_game()
 			
 		GlobalSignalManager.SignalType.PLAY_COMPUTER:
-			set_play_computer()
+			start_game_computer()
 			
 		GlobalSignalManager.SignalType.MENU:
 			_on_menu_button()
 			
 		GlobalSignalManager.SignalType.PLAYER_CHOSE_CROSS:
-			set_play_computer()
+			start_game_computer()
 		
 		GlobalSignalManager.SignalType.PLAYER_CHOSE_NAUGHT:
-			set_play_computer()
+			start_game_computer()
 		
 
-# Restarting game data
+## Resets the game for another game. [br]
+## Resets all variables that are non-persistant and sends out the reset signal.
 func _on_reset():
 	
 	can_end_state = true
@@ -75,19 +141,21 @@ func _on_reset():
 		
 	if initial_waiting_count == 0:
 		end_state()
-		
+	else:
+		check_if_waiting = true
 
 
+## Exits out of game, resetting it, to main menu.
 func _on_menu_button():
 	
-	comp_is_playing = false
 	piece_chosen = false
-	
 	play_after_restart = false
+	
 	change_game_state(GameStates.RESET)
 	
 
-# Handles what happens on the end of a game state	
+## Ends current game state and controls what the next game state will then be.
+## Checks if there are any waiting scripts or if the current game has ended or not.
 func end_state():	
 	
 	if not can_end_state:
@@ -95,12 +163,14 @@ func end_state():
 		return
 	
 	# Used to handle loading state
-	if is_waiting():
+	if check_if_waiting:
+		handle_waiting()
 		return
 		
-	if has_game_ended():
-		change_game_state(GameStates.END_GAME)
-		return
+	if check_if_endgame:
+		if has_game_ended():
+			change_game_state(GameStates.END_GAME)
+			return
 	
 	match current_game_state:
 		
@@ -121,25 +191,27 @@ func end_state():
 
 
 # Handles loading in each script that needs to be loaded in prior to the game starting, returning whether if the game is waiting still or not
-func is_waiting():
+func handle_waiting():
 	
 	# Only is waiting if the game is loading or resetting
 	if current_game_state == GameStates.LOAD or current_game_state == GameStates.RESET:
 		
-		waiting_count -= 1
+		waiting_counter -= 1
 		
 		# Stops waiting if the waiting count is 0
-		if waiting_count <= 0:
+		if waiting_counter <= 0:
 			can_end_state = false
+			check_if_waiting = false
 			return false
 		else:
 			return true
 			
 	else:
+		print("Error! Current game state isn't load or reset?")
 		return	false
 
 
-# Checks if game has ended and updates data accordingly
+# Checks if game has ended and updates data accordingly.
 func has_game_ended():
 	
 	# Checks who has won. 
@@ -150,25 +222,28 @@ func has_game_ended():
 		naughts_won = true
 	elif game_board_manager.has_crosses_won():
 		crosses_won = true
-	elif not game_board_manager.has_game_ended():
+	elif not game_board_manager.has_game_drawn():
 		return false
 	
 	handle_game_end()
 	return true
 
 
-# Changes state and activates the signal
+# Changes state and activates the signal.
 func change_game_state(new_game_state : GameStates):		
+	
+	print(new_game_state)
 	
 	current_game_state = new_game_state
 	game_state_change.emit(new_game_state)
 
 
-# Handles what happens on game end
+# Handles what happens on game end.
 func handle_game_end():
 	
 	print("Game ended.")
 	can_end_state = false
+	check_if_endgame = false
 	
 	if naughts_won:
 		print("Naughts won!")
@@ -197,14 +272,13 @@ func start_game():
 	
 	can_end_state = true
 	play_after_restart = true
+	check_if_endgame = true
 	change_game_state(GameStates.PLAYING)
 	change_game_state(GameStates.NAUGHT)
  
 
 # Starts a game with the computer
-func set_play_computer():
-	
-	comp_is_playing = true
+func start_game_computer():
 	
 	if piece_chosen == false:
 		change_game_state(GameStates.PIECE_CHOICE)
@@ -228,7 +302,7 @@ func handle_game_turn():
 
 # Allows a script to request the game state manager to wait for them to finish loading
 func request_loading():
-	waiting_count += 1
+	waiting_counter += 1
 	initial_waiting_count += 1
 
 

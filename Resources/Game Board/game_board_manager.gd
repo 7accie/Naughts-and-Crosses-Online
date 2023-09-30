@@ -1,61 +1,95 @@
-# Manages game pieces on the game board
-# Allows for adding, removal and analysis of game pieces on the game board
-
  
+# ---------------------------------------------------------------------------------------------- #
+
+## Manages game pieces on the game board
+## Allows for adding, removal and analysis of game pieces on the game board
+ 
+# ---------------------------------------------------------------------------------------------- #
+
 
 extends Node
 class_name GameBoardManager
 
 
 
-# References
+
+### --- Signals --- ###
+																									
+### ------------------------------------------------------------------------------------------ ###
+
+
+
+
+signal game_board_click(position : Vector3)
+
+
+
+
+### --- Properties --- ###
+																									
+### ------------------------------------------------------------------------------------------ ###
+
+
 @export var game_state_manager : Node
 @export var object_drawer : Node
 @export var board_mesh : Node
 
 
-
-# Signals
-signal game_board_click(position : Vector3)
-
-
-
-# Data
+## Holds all possible game pieces that may be on the game board.
 enum GamePieces {EMPTY, NAUGHT, CROSS}
+
+## Constant for size of grid. [br]
+## Not a good idea to change this from 3 though.
 const GRID_SIZE = 3
-var cell_size : Vector2 # Vector from centre of cell to the bottom right of the cell
-var board_positions = [] # Contains all possible positions of game piecs, doesn't change
+
+## Stores a vector translation from the centre of each grid cell to the bottom right of that cell. [br]
+var cell_size : Vector2
+
+## Stores global positions in space of the grid cells. [br]
+## Does not change after it has been set!
+var board_positions = []
+
+## Stores the bounds for the entire game grid.
 var board_bounds : Rect2
 
-# Data that needs to be reset
-var board_data = [] # Contains all game piece type positions
-var board_pieces = {} # Contains physical game piece object positions
+## Stores the game piece types in a 2d array. [br]
+## Stores GamePieces enum in each element. [br]
+## Each position in the array corresponds to board_positions.
+## Non-persistant data that is reset to its origianl state.
+var board_data = Array(Array())
+
+## Stores game piece meshes. [br]
+## Key: Global position [br]
+## Value: Mesh
+## Non-persistant data that is reset to its origianl state.
+var board_pieces = {}
 
 
 
-# Signal functions	
-		
-	
+
+### --- Functions --- ###
+																									
+### ------------------------------------------------------------------------------------------ ###
+
+
+## Initialises board and connects relevant signals.
 func _ready():
 	_connect_signals()
 	_initialise_game_board()
 
 
+## Handles what's done on each game state. [br]
+## Just deals with board resetting.
 func _on_game_state_change(new_game_state):
 	
 	match new_game_state:			
 			
 		game_state_manager.GameStates.RESET:
 			_reset_board()
-	
 
-		
-	
-	
 
-# 'Private' functions
-
-# Gets all board positions and fills in board data to be empty
+## Sets up game board and all it's relevant properties. [br]
+## Sets board_bounds, board_positions, board_data and cell_size based on GRID_SIZE
 func _initialise_game_board():
 	
 	# Gets important data about the board
@@ -75,39 +109,46 @@ func _initialise_game_board():
 			board_data[x].append(GamePieces.EMPTY)
 			position_to_add.y += board_dimensions.y / 3
 		current_position.x += board_dimensions.x / 3
-	
-	
-# Returns 4d vector, first 2 positions being the rounded positon, the last 2 positions being the index of the position
-func _get_rounded_piece_position(position_3D):
+
+
+## Converts a global position to the a specific 2d position of a grid cell on the board. [br]
+## Also returns the array positions of the grid cell. [br]
+## In vector4, first 2 values represent grid cell position, last 2 values represent array 
+## position. [br] 
+## Validation: returns an empty vector4 if input is not within the game grid
+func _get_rounded_piece_position(position_3D) -> Vector4:
 	
 	# Converts input Vector3 to Vector2 for the 2D bounds used for each grid cell on the game board
-	var position_2D = Vector2(position_3D.x, position_3D.z)
+	var position_2D = Vector2(position_3D.x, position_3D.z)#
+	var output_vector = Vector4()
 	
 	# Checks if input position is outside the game board bounds which would cause an error
 	if not board_bounds.has_point(position_2D):
 		print("Error! Position inputted outside bounds!")
-		return
+		return output_vector
 	
 	# Goes through each grid cell and creates a bound to check if the position is contained within it
 	for x in range(GRID_SIZE):
 		for y in range(GRID_SIZE): 
 			var cell_bounds = Rect2(board_positions[x][y] - cell_size, cell_size * 2)	
 			if cell_bounds.has_point(position_2D):
-				return Vector4(board_positions[x][y].x, board_positions[x][y].y, x, y)
+				output_vector = Vector4(board_positions[x][y].x, board_positions[x][y].y, x, y)
+				return output_vector
 	
 	# If nothing is found then something must be wrong...
 	print("Error! Position not found?")
-	return
+	return output_vector
 
 
-# Connects all signals required for the script
+## Connects all required signals for the script.
 func _connect_signals():
-	# Connects to input manager
+	
 	GlobalSignalManager.connect_global_signal(board_mesh.get_node("StaticBody3D").input_event, GlobalSignalManager.SignalType.GAME_BOARD_INPUT)
 
 	
-# Checks if a specific game piece has won or not
-func _has_game_piece_won(game_piece : GamePieces):
+## Checks if a specific game piece has won or not. [br]
+## Validation: GamePiece.EMPTY cannot be inputted and will return false
+func _has_game_piece_won(game_piece : GamePieces) -> bool:
 	
 	# Validation
 	if game_piece == GamePieces.EMPTY:
@@ -124,7 +165,7 @@ func _has_game_piece_won(game_piece : GamePieces):
 	
 	# Check for horizontal matches 
 	for i in range(GRID_SIZE):
-		if _find_matching_line(game_piece, current_position, Vector2i.RIGHT):
+		if _is_matching_line(game_piece, current_position, Vector2i.RIGHT):
 			return true
 		current_position.y += 1
 	
@@ -133,15 +174,15 @@ func _has_game_piece_won(game_piece : GamePieces):
 	# Check vertical matches
 	for i in range(GRID_SIZE):
 		#print("Checking column %s" % (i+1))
-		if _find_matching_line(game_piece, current_position, Vector2i.DOWN):
+		if _is_matching_line(game_piece, current_position, Vector2i.DOWN):
 			return true
 		current_position.x += 1
 	
 	current_position = Vector2i.ZERO
 	
 	# Check for diagonal matches
-	var diagonal1 = _find_matching_line(game_piece, current_position, Vector2i(1,1))
-	var diagonal2 = _find_matching_line(game_piece, Vector2i(0, GRID_SIZE-1), Vector2i(1,-1))
+	var diagonal1 = _is_matching_line(game_piece, current_position, Vector2i(1,1))
+	var diagonal2 = _is_matching_line(game_piece, Vector2i(0, GRID_SIZE-1), Vector2i(1,-1))
 	
 	if diagonal1 or diagonal2:
 		return true
@@ -149,8 +190,12 @@ func _has_game_piece_won(game_piece : GamePieces):
 	return false
 
  
-# Finds a matching line on the grid in  a specific direction, to see if that piece has won
-func _find_matching_line(game_piece, starting_position, line_direction):
+## Finds a matching line on the grid in  a specific direction, to see if that piece has won.
+## Validation: [br]
+## ~ GamePiece.EMPTY cannot be inputted and will return false [br]
+## ~ Starting position must be the array position [br]
+## ~ Line_direction must have a magnitude of 1 in only 1 2d direction
+func _is_matching_line(game_piece : GamePieces, starting_position : Vector2, line_direction : Vector2) -> bool:
 	
 	# Validation
 	if game_piece == GamePieces.EMPTY:
@@ -159,27 +204,31 @@ func _find_matching_line(game_piece, starting_position, line_direction):
 	elif starting_position.x >= GRID_SIZE or starting_position.x < 0 or starting_position.y >= GRID_SIZE or starting_position.y < 0:
 		print("Erorr? Invalid starting position!")
 		return false
+	elif not (line_direction.x == 1 or line_direction.x == 0 
+		and line_direction.y == 1 or line_direction.x == 0):
+		print("Erorr? Invalid line direction vector! Must have a magnitude of 1.")
+		return false
 	
 	var current_position = starting_position
 	
 	for i in range(GRID_SIZE-1):
-		var next_position = current_position + line_direction
-		var positions_match = board_data[current_position.x][current_position.y] == board_data[next_position.x][next_position.y]
-		var position_matches_piece = game_piece == board_data[next_position.x][next_position.y]
 		
-		#print("%s (at position %s) == %s (at position %s) is %s" % [board_data[current_position.x][current_position.y], current_position, board_data[next_position.x][next_position.y], next_position, positions_match])
-		#print("Matching game piece: %s" % position_matches_piece) 
+		var next_position = current_position + line_direction
+		var current_game_piece = board_data[current_position.x][current_position.y]
+		var next_game_piece = board_data[next_position.x][next_position.y]
+		var positions_match = current_game_piece == next_game_piece
+		var position_matches_piece = game_piece == current_game_piece
 		
 		if not (positions_match and position_matches_piece):
-			#print("Current column therefore does not contain match")
 			return false
+			
 		current_position = next_position
 		
-	#print("Therefore match has been found!")
 	return true
 
 
-# Resets all data that needs to be reset
+## Resets all data that needs to be reset.
+## Sets all non-persistent properties to it's original state
 func _reset_board():
 	
 	# Clears each array in board_data 2d array
@@ -194,11 +243,7 @@ func _reset_board():
 	board_pieces.clear()
 
 
-
-
-# 'Public' functions
-
-# Adds a new game piece as a specified position
+## Adds a new game piece mesh and data at a specified position.
 func add_piece(piece_type:GamePieces, position_3D:Vector3):
 	
 	# Checks if an empty game piece is inputted for some reason
@@ -221,7 +266,7 @@ func add_piece(piece_type:GamePieces, position_3D:Vector3):
 	return true
 
 
-# Adds a random new game piece for the computer opponent
+## Adds a random new game piece mesh and data at a specified position.
 func add_random_piece(piece_type:GamePieces):
 
 	# Checks if an empty game piece is inputted for some reason
@@ -243,16 +288,16 @@ func add_random_piece(piece_type:GamePieces):
 	add_piece(piece_type, Vector3(random_piece_position.x, 0, random_piece_position.y))
 
 
-# Returns whether it's a draw or not
-func has_game_drew():
+## Returns whether the game has drawn, i.e. all positions are taken up.
+func has_game_drawn() -> bool:
 	return board_pieces.size() >= GRID_SIZE ** 2
 
 
-# Returns whether naughts has won or not
-func has_naughts_won():
+## Returns whether naughts has won or not.
+func has_naughts_won() -> bool:
 	return _has_game_piece_won(GamePieces.NAUGHT)
-	
-	
-# Returns whether crosses has won or not
-func has_crosses_won():
+
+
+## Returns whether crosses has won or not.
+func has_crosses_won() -> bool:
 	return _has_game_piece_won(GamePieces.CROSS)

@@ -1,4 +1,20 @@
+
+# ---------------------------------------------------------------------------------------------- #
+
+## Controls computer behaviour.
+ 
+# ---------------------------------------------------------------------------------------------- #
+
+
 extends Node
+class_name ComputerOpponent
+
+
+
+
+### --- Properties --- ###
+																									
+### ------------------------------------------------------------------------------------------ ###
 
 
 # References
@@ -6,15 +22,28 @@ extends Node
 @export var game_state_manager : Node
 
 
+## Stores the game_piece that the computer is currently playing.
 var game_piece : GameBoardManager.GamePieces
+
+## Used to check if the computer is playing the game or not.
 var is_playing = false
 
 
+
+
+### --- Functions --- ###
+																									
+### ------------------------------------------------------------------------------------------ ###
+
+
+## Connects necessary signals for the script
 func _ready():
 	
 	GlobalSignalManager.UI_button_click.connect(_on_UI_button_click)
 
 
+## Controls what happens on each game state. [br]
+## Just reacts to game turn states (NAUGHTS or CROSSES)
 func on_game_state_change(new_game_state):
 	
 	if is_playing:
@@ -26,11 +55,10 @@ func on_game_state_change(new_game_state):
 				
 			GameStateManager.GameStates.NAUGHT:
 				_on_game_turn(GameBoardManager.GamePieces.NAUGHT)
-				
-			
 
 
-# Handles what to do on certain UI inputs
+## Handles what to do on certain UI inputs. [br]
+## Mainly to get game_piece and is_playing values.
 func _on_UI_button_click(signal_type):
 	
 	match signal_type:
@@ -45,15 +73,16 @@ func _on_UI_button_click(signal_type):
 			
 		GlobalSignalManager.SignalType.MENU:
 			is_playing = false
-			
 
-# Handles what happens on a game turn
+
+## Handles what happens on a game turn.
 func _on_game_turn(game_piece_turn : GameBoardManager.GamePieces):
 	
 	if game_piece == game_piece_turn:
 		handle_computer_turn()
-		
-		
+
+
+## Handles the actual game turn.
 func handle_computer_turn():
 	
 	# Waits 1 second

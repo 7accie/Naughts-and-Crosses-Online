@@ -1,4 +1,21 @@
+
+# ---------------------------------------------------------------------------------------------- #
+
+## Manages user player.
+ 
+# ---------------------------------------------------------------------------------------------- #
+
+
 extends Node
+class_name Player
+
+
+
+
+### --- Properties --- ###
+																									
+### ------------------------------------------------------------------------------------------ ###
+
 
 
 # Reference
@@ -6,17 +23,29 @@ extends Node
 @export var game_board_manager : Node
 
 
-# Data
+## Stores what the piece the player is going to place on their turn.
 var game_piece : GameBoardManager.GamePieces = GameBoardManager.GamePieces.CROSS
+
+## Whether the player is in control of NAUGHTS and CROSSES (local play) or just 1.
 var change_game_piece = true
 
 
+
+
+### --- Functions --- ###
+																									
+### ------------------------------------------------------------------------------------------ ###
+
+
+
+## Connects necessary signals needed for the script.
 func _ready():
 	
 	GlobalSignalManager.UI_button_click.connect(_on_UI_button_click)
 
 
-# Handles what to do on certain UI inputs
+## Handles what to do on certain UI inputs. [br]
+## Mainly just sets game_piece and change_game_piece.
 func _on_UI_button_click(signal_type):
 	
 	match signal_type:
@@ -33,7 +62,8 @@ func _on_UI_button_click(signal_type):
 			change_game_piece = true
 			
 
-# Handles what to do when game state changes, such as for playing and loading
+## Handles what to do when game state changes. [br]
+## Mainly just on game turns (NAUGHTS or CROSSES).
 func _on_game_state_change(new_game_state : GameStateManager.GameStates):
 
 	match new_game_state:
@@ -47,7 +77,7 @@ func _on_game_state_change(new_game_state : GameStateManager.GameStates):
 			_on_game_turn(GameBoardManager.GamePieces.NAUGHT)
 
 
-# Checks if the input was valid, if not listens for another input
+## Checks if position is 
 func _on_game_board_click(position:Vector3):
 	GlobalSignalManager.game_board_input.disconnect(_on_game_board_click)
 	
@@ -71,7 +101,8 @@ func _on_game_turn(game_piece_turn : GameBoardManager.GamePieces):
 	handle_player_turn()
 
 
-# Gets the player move by listening to game board input
+## Gets the player move by listening to game board input. [br]
+## Checks if it's valid or not, if not listened for another input
 func handle_player_turn():
 	
 	if GlobalSignalManager.game_board_input.is_connected(_on_game_board_click):
